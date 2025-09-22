@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,15 +20,21 @@ public class CardManager : MonoBehaviour
     public Sprite backSprite;
     public Transform[] playerHandAreas; // 내 기준 시계방향으로 배치된 5개 영역
 
+    public Button startButton;
+    public GameObject cardStackObject;      // 중앙 카드더미 이미지
+    public GameObject flyingCardPrefab;     // 날아가는 카드 프리팹
+
     void Start()
     {
         LoadCardSprites();
-        InitializeDeck();
-        ShuffleDeck();
-        DealCards();
-        ShowCards();
+        //InitializeDeck();
+        //ShuffleDeck();
+        //DealCards();
+        //ShowCards();
     }
 
+
+    // 카드 스프라이트 불러오기
     void LoadCardSprites()
     {
         cardSprites.Clear();
@@ -60,6 +67,66 @@ public class CardManager : MonoBehaviour
         }
     }
 
+    // 시작 애니메이션
+
+
+    public void OnStartButtonClicked()
+    {
+        Debug.Log("시작 버튼 눌림!");
+        startButton.interactable = false;
+        startButton.gameObject.SetActive(false);
+
+        InitializeDeck();
+        ShuffleDeck();
+        DealCards();
+        cardStackObject.SetActive(true); // 카드더미 보이기
+        StartCoroutine(DistributeCardsAnimated());
+    }
+    IEnumerator DistributeCardsAnimated()
+    {
+        int totalPlayers = 5;
+        List<int> displayOrder = GetDisplayOrder(myPlayerNumber);
+
+        for (int round = 0; round < 10; round++)
+        {
+            for (int i = 0; i < totalPlayers; i++)
+            {
+                int actualPlayerNumber = displayOrder[i];
+                int handIndex = actualPlayerNumber - 1;
+
+                int cardId = playerHands[handIndex][round]; // 이미 분배된 카드 정보 사용
+
+                yield return StartCoroutine(AnimateCardToPlayer(cardId, i, actualPlayerNumber == myPlayerNumber));
+            }
+        }
+
+        cardStackObject.SetActive(false);
+    }
+
+    IEnumerator AnimateCardToPlayer(int cardId, int uiIndex, bool isLocalPlayer)
+    {
+        GameObject flyingCard = Instantiate(flyingCardPrefab, cardStackObject.transform.position, Quaternion.identity, cardStackObject.transform.parent);
+        Image cardImage = flyingCard.GetComponent<Image>();
+        cardImage.sprite = isLocalPlayer ? cardSprites[cardId] : backSprite;
+
+        Vector3 targetPos = playerHandAreas[uiIndex].position;
+        float duration = 0.07f;
+        float elapsed = 0f;
+        Vector3 startPos = flyingCard.transform.position;
+
+        while (elapsed < duration)
+        {
+            flyingCard.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        flyingCard.transform.SetParent(playerHandAreas[uiIndex]);
+        flyingCard.transform.localPosition = Vector3.zero;
+    }
+
+
+    // 카드 분배
     void InitializeDeck()
     {
         deck.Clear();
@@ -205,4 +272,6 @@ public class CardManager : MonoBehaviour
             });
         }
     }
+
+
 }
