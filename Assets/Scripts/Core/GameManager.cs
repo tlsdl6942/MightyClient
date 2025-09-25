@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public CardUIManager cardUI;
+    public PledgePopupManager pledgePopupManager;
     public int myPlayerNumber = 1;
 
     private List<int> deck = new List<int>();
@@ -22,6 +23,8 @@ public class GameManager : MonoBehaviour
         InitializeDeck();
         ShuffleDeck();
         DealCards();
+        SortPlayerHands();
+        PrintPlayerHands();
         cardUI.StartCardAnimation(playerHands, myPlayerNumber);
     }
 
@@ -73,5 +76,82 @@ public class GameManager : MonoBehaviour
             }
             playerHands.Add(hand);
         }
+    }
+
+    void SortPlayerHands()
+    {
+        Dictionary<string, int> suitOrder = new Dictionary<string, int>
+    {
+        { "S", 0 },
+        { "D", 1 },
+        { "H", 2 },
+        { "C", 3 }
+    };
+
+        Dictionary<string, int> rankOrder = new Dictionary<string, int>
+    {
+        { "2", 0 },
+        { "3", 1 },
+        { "4", 2 },
+        { "5", 3 },
+        { "6", 4 },
+        { "7", 5 },
+        { "8", 6 },
+        { "9", 7 },
+        { "10", 8 },
+        { "J", 9 },
+        { "Q", 10 },
+        { "K", 11 },
+        { "A", 12 }
+    };
+
+        for (int i = 0; i < playerHands.Count; i++)
+        {
+            playerHands[i].Sort((a, b) =>
+            {
+                string nameA = cardSprites[a].name;
+                string nameB = cardSprites[b].name;
+
+                // Joker 예외 처리
+                if (nameA == "Joker") return 1;
+                if (nameB == "Joker") return -1;
+
+                string rankA = nameA.Substring(0, nameA.Length - 1);
+                string suitA = nameA.Substring(nameA.Length - 1);
+
+                string rankB = nameB.Substring(0, nameB.Length - 1);
+                string suitB = nameB.Substring(nameB.Length - 1);
+
+                int suitCompare = suitOrder[suitA].CompareTo(suitOrder[suitB]);
+                if (suitCompare != 0)
+                    return suitCompare;
+
+                return rankOrder[rankA].CompareTo(rankOrder[rankB]);
+            });
+        }
+    }
+    
+    void PrintPlayerHands()
+    {
+        for (int i = 0; i < playerHands.Count; i++)
+        {
+            string handStr = $"Player {i + 1}: ";
+            foreach (int cardIndex in playerHands[i])
+            {
+                handStr += GetCardName(cardIndex) + " ";
+            }
+            Debug.Log(handStr);
+        }
+    }
+
+    string GetCardName(int index)
+    {
+        return cardSprites[index].name; // 예: "2D", "KC", "Joker"
+    }
+    public void OnCardDistributionComplete()
+    {
+        List<int> myHand = playerHands[myPlayerNumber - 1];
+        Debug.Log("출마 공약 팝업 on");
+        pledgePopupManager.ShowPopup(myHand, cardSprites);
     }
 }

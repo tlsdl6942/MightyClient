@@ -42,8 +42,21 @@ public class CardUIManager : MonoBehaviour
                 yield return StartCoroutine(AnimateCardToPlayer(cardId, i, actualPlayerNumber == myPlayerNumber));
             }
         }
-
         cardStackObject.SetActive(false);
+
+        // 애니메이션 끝났다고 GameManager에게 알림
+        cardStackObject.SetActive(false);
+
+        if (gameManager != null)
+        {
+            Debug.Log("GameManager 연결됨, 애니메이션 완료 후 호출");
+            gameManager.OnCardDistributionComplete();
+        }
+        else
+        {
+            Debug.LogError("GameManager가 연결되지 않았습니다!");
+        }
+
     }
 
     IEnumerator AnimateCardToPlayer(int cardId, int uiIndex, bool isLocalPlayer)
