@@ -31,22 +31,18 @@ public class CardUIManager : MonoBehaviour
         int totalPlayers = 5;
         List<int> displayOrder = GetDisplayOrder(myPlayerNumber);
 
-        for (int i = 0; i < totalPlayers; i++)
+        for (int round = 0; round < 10; round++) // 10라운드
         {
-            int actualPlayerNumber = displayOrder[i];
-            int handIndex = actualPlayerNumber - 1;
-            List<int> sortedHand = playerHands[handIndex];
-
-            for (int j = 0; j < sortedHand.Count; j++)
+            for (int i = 0; i < totalPlayers; i++) // 각 플레이어에게 한 장씩
             {
-                int cardId = sortedHand[j];
+                int actualPlayerNumber = displayOrder[i];
+                int handIndex = actualPlayerNumber - 1;
+                int cardId = playerHands[handIndex][round]; // 각 플레이어의 n번째 카드
+
                 yield return StartCoroutine(AnimateCardToPlayer(cardId, i, actualPlayerNumber == myPlayerNumber));
             }
         }
 
-        cardStackObject.SetActive(false);
-
-        // 애니메이션 끝났다고 GameManager에게 알림
         cardStackObject.SetActive(false);
 
         if (gameManager != null)
@@ -58,7 +54,6 @@ public class CardUIManager : MonoBehaviour
         {
             Debug.LogError("GameManager가 연결되지 않았습니다!");
         }
-
     }
 
     IEnumerator AnimateCardToPlayer(int cardId, int uiIndex, bool isLocalPlayer)
