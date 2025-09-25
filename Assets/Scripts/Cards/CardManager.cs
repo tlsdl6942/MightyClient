@@ -110,7 +110,7 @@ public class CardManager : MonoBehaviour
         cardImage.sprite = isLocalPlayer ? cardSprites[cardId] : backSprite;
 
         Vector3 targetPos = playerHandAreas[uiIndex].position;
-        float duration = 0.07f;
+        float duration = 0.04f;
         float elapsed = 0f;
         Vector3 startPos = flyingCard.transform.position;
 
