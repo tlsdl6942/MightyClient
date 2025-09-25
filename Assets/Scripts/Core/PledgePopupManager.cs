@@ -1,6 +1,7 @@
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public class PledgePopupManager : MonoBehaviour
 {
@@ -8,15 +9,15 @@ public class PledgePopupManager : MonoBehaviour
     public GameObject popupPanel;
     public Image suitIcon;
     public Slider pledgeSlider;
-    public Text pledgeValueText;
+    public TextMeshProUGUI pledgeValueText;
     public Button runButton;
     public Button giveUpButton;
 
-    [Header("문양 선택 토글")]
-    public Toggle spadeToggle;
-    public Toggle heartToggle;
-    public Toggle diamondToggle;
-    public Toggle clubToggle;
+    [Header("문양 선택 버튼")]
+    public Button spadeButton;
+    public Button heartButton;
+    public Button diamondButton;
+    public Button clubButton;
 
     [Header("문양 아이콘")]
     public Sprite spadeSprite;
@@ -24,15 +25,30 @@ public class PledgePopupManager : MonoBehaviour
     public Sprite diamondSprite;
     public Sprite clubSprite;
 
+    public string selectedSuit;
+
     public void ShowPopup(List<int> myHand, List<Sprite> cardSprites)
     {
         popupPanel.SetActive(true);
 
-        string defaultSuit = GetMostCommonSuit(myHand, cardSprites);
-        SelectDefaultSuit(defaultSuit);
+        selectedSuit = GetMostCommonSuit(myHand, cardSprites);
+        UpdateSuitIcon(selectedSuit);
+
+        // 문양 버튼 이벤트 연결
+        spadeButton.onClick.RemoveAllListeners();
+        heartButton.onClick.RemoveAllListeners();
+        diamondButton.onClick.RemoveAllListeners();
+        clubButton.onClick.RemoveAllListeners();
+
+        spadeButton.onClick.AddListener(() => OnSuitSelected("S"));
+        heartButton.onClick.AddListener(() => OnSuitSelected("H"));
+        diamondButton.onClick.AddListener(() => OnSuitSelected("D"));
+        clubButton.onClick.AddListener(() => OnSuitSelected("C"));
+
+
 
         pledgeSlider.minValue = 13;
-        pledgeSlider.maxValue = myHand.Count;
+        pledgeSlider.maxValue = 20;
         pledgeSlider.value = 13;
         pledgeValueText.text = "13";
 
@@ -44,7 +60,7 @@ public class PledgePopupManager : MonoBehaviour
         runButton.onClick.RemoveAllListeners();
         runButton.onClick.AddListener(() =>
         {
-            string selectedSuit = GetSelectedSuit();
+            //string selectedSuit = GetSelectedSuit();
             int pledgeCount = (int)pledgeSlider.value;
             Debug.Log($"출마! 문양: {selectedSuit}, 공약: {pledgeCount}장");
             popupPanel.SetActive(false);
@@ -58,26 +74,6 @@ public class PledgePopupManager : MonoBehaviour
         });
     }
 
-    void SelectDefaultSuit(string suit)
-    {
-        switch (suit)
-        {
-            case "S": spadeToggle.isOn = true; break;
-            case "H": heartToggle.isOn = true; break;
-            case "D": diamondToggle.isOn = true; break;
-            case "C": clubToggle.isOn = true; break;
-        }
-        suitIcon.sprite = GetSuitSprite(suit);
-    }
-
-    string GetSelectedSuit()
-    {
-        if (spadeToggle.isOn) return "S";
-        if (heartToggle.isOn) return "H";
-        if (diamondToggle.isOn) return "D";
-        if (clubToggle.isOn) return "C";
-        return "S";
-    }
 
     Sprite GetSuitSprite(string suit)
     {
@@ -118,5 +114,22 @@ public class PledgePopupManager : MonoBehaviour
         }
 
         return mostSuit;
+    }
+    void OnSuitSelected(string suit)
+    {
+        selectedSuit = suit;
+        UpdateSuitIcon(suit);
+        Debug.Log($"문양 선택됨: {suit}");
+    }
+
+    void UpdateSuitIcon(string suit)
+    {
+        switch (suit)
+        {
+            case "S": suitIcon.sprite = spadeSprite; break;
+            case "H": suitIcon.sprite = heartSprite; break;
+            case "D": suitIcon.sprite = diamondSprite; break;
+            case "C": suitIcon.sprite = clubSprite; break;
+        }
     }
 }

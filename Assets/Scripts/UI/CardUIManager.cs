@@ -31,17 +31,19 @@ public class CardUIManager : MonoBehaviour
         int totalPlayers = 5;
         List<int> displayOrder = GetDisplayOrder(myPlayerNumber);
 
-        for (int round = 0; round < 10; round++)
+        for (int i = 0; i < totalPlayers; i++)
         {
-            for (int i = 0; i < totalPlayers; i++)
-            {
-                int actualPlayerNumber = displayOrder[i];
-                int handIndex = actualPlayerNumber - 1;
-                int cardId = playerHands[handIndex][round];
+            int actualPlayerNumber = displayOrder[i];
+            int handIndex = actualPlayerNumber - 1;
+            List<int> sortedHand = playerHands[handIndex];
 
+            for (int j = 0; j < sortedHand.Count; j++)
+            {
+                int cardId = sortedHand[j];
                 yield return StartCoroutine(AnimateCardToPlayer(cardId, i, actualPlayerNumber == myPlayerNumber));
             }
         }
+
         cardStackObject.SetActive(false);
 
         // 애니메이션 끝났다고 GameManager에게 알림

@@ -1973,7 +1973,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 940932135}
-  - component: {fileID: 940932136}
   - component: {fileID: 940932138}
   m_Layer: 0
   m_Name: CardUIManager
@@ -1997,31 +1996,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &940932136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 940932133}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87772a165e47f71429df7a3d7a68a72c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardSprites: []
-  myPlayerNumber: 1
-  cardPrefab: {fileID: 487528971736214668, guid: 82d914a1899daf045a49b8f619c4c930, type: 3}
-  backSprite: {fileID: 21300000, guid: 1adfb910b9bddf04c89e435b9a02dcb2, type: 3}
-  playerHandAreas:
-  - {fileID: 568437937}
-  - {fileID: 312541059}
-  - {fileID: 982775145}
-  - {fileID: 172433983}
-  - {fileID: 1395399638}
-  startButton: {fileID: 1337165623}
-  cardStackObject: {fileID: 327775564}
-  flyingCardPrefab: {fileID: 8043013441102826757, guid: 241aa7c3e30495048b2329aaf2ec6162, type: 3}
 --- !u!114 &940932138
 MonoBehaviour:
   m_ObjectHideFlags: 0
