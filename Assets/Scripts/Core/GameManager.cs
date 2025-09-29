@@ -180,6 +180,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void PrintDeck()
+    {
+        string deckStr = $"µ¦: ";
+        foreach (int cardIndex in deck)
+        {
+            deckStr += GetCardName(cardIndex) + " ";
+        }
+        Debug.Log(deckStr);
+    }
+
     string GetCardName(int index)
     {
         return cardSprites[index].name; // ¿¹: "2D", "KC", "Joker"
@@ -225,7 +235,8 @@ public class GameManager : MonoBehaviour
             currentPlayerIndex++;
         }
 
-        EvaluateCandidates();
+        if (!isLeaderFinalized)
+            EvaluateCandidates();
     }
 
     IEnumerator ShowPledgePopupForPlayer(int playerNum)
@@ -306,7 +317,9 @@ public class GameManager : MonoBehaviour
     public List<int> GetExtraCardsForLeader()
     {
         List<int> extraCards = deck.Take(3).ToList();
+        PrintDeck();
         deck.RemoveRange(0, 3);
+        PrintDeck();
         return extraCards;
     }
 }
