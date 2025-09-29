@@ -7,12 +7,13 @@ public class CardUIManager : MonoBehaviour
 {
     public GameObject cardPrefab;
     public Sprite backSprite;
-    public Transform[] playerHandAreas;
+    public Transform[] playerHandAreas; // UI 인덱스는 0~4
     public GameObject cardStackObject;
     public GameObject flyingCardPrefab;
     public Button startButton;
     public GameManager gameManager;
 
+    // 게임 시작
     public void OnStartButtonClicked()
     {
         startButton.interactable = false;
@@ -35,20 +36,20 @@ public class CardUIManager : MonoBehaviour
         {
             for (int i = 0; i < totalPlayers; i++) // 각 플레이어에게 한 장씩
             {
-                int actualPlayerNumber = displayOrder[i];
-                int handIndex = actualPlayerNumber - 1;
-                int cardId = playerHands[handIndex][round]; // 각 플레이어의 n번째 카드
+                int actualPlayerNumber = displayOrder[i]; // 1~5
+                int handIndex = actualPlayerNumber;       //  보정 제거
+                int cardId = playerHands[handIndex][round];
 
                 yield return StartCoroutine(AnimateCardToPlayer(cardId, i, actualPlayerNumber == myPlayerNumber));
             }
         }
 
-        cardStackObject.SetActive(false);
+        //cardStackObject.SetActive(false);
 
         if (gameManager != null)
         {
             Debug.Log("GameManager 연결됨, 애니메이션 완료 후 호출");
-            gameManager.OnCardDistributionComplete();
+            gameManager.StartPledgeRound();
         }
         else
         {
@@ -88,5 +89,31 @@ public class CardUIManager : MonoBehaviour
             order.Add(num);
         }
         return order;
+    }
+
+
+    // 여당 대표 선정 직후
+    public void DistributeExtraCardsToLeader(int leaderPlayerNum, List<int> extraCards)
+    {
+        int uiIndex = GetUIIndexFromPlayerNumber(leaderPlayerNum);
+        bool isLocalPlayer = (leaderPlayerNum == gameManager.myPlayerNumber);
+
+        StartCoroutine(DistributeCardsToSinglePlayer(extraCards, uiIndex, isLocalPlayer));
+    }
+
+    int GetUIIndexFromPlayerNumber(int playerNum)
+    {
+        List<int> displayOrder = GetDisplayOrder(gameManager.myPlayerNumber);
+        return displayOrder.IndexOf(playerNum);
+    }
+    IEnumerator DistributeCardsToSinglePlayer(List<int> cardIds, int uiIndex, bool isLocalPlayer)
+    {
+        foreach (int cardId in cardIds)
+        {
+            yield return StartCoroutine(AnimateCardToPlayer(cardId, uiIndex, isLocalPlayer));
+        }
+
+        // 대표의 패에 카드 추가
+        gameManager.playerHands[gameManager.rulingPartyLeader].AddRange(cardIds);
     }
 }

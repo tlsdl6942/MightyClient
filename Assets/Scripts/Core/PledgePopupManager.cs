@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PledgePopupManager : MonoBehaviour
 {
+    public GameManager gameManager;
+
     [Header("UI 연결")]
     public GameObject popupPanel;
     public Image suitIcon;
@@ -27,11 +29,19 @@ public class PledgePopupManager : MonoBehaviour
 
     public string selectedSuit;
 
-    public void ShowPopup(List<int> myHand, List<Sprite> cardSprites)
+    public bool isPopupClosed = false;
+
+    public void ShowPopupForPlayer(int playerNum)
     {
+        Debug.Log($"[팝업] playerNum: {playerNum}");
+        //Debug.Log($"[팝업] playerHands.Count: {gameManager.playerHands.Count}");
+
+
+        isPopupClosed = false;
         popupPanel.SetActive(true);
 
-        selectedSuit = GetMostCommonSuit(myHand, cardSprites);
+        List<int> hand = gameManager.playerHands[playerNum];
+        selectedSuit = GetMostCommonSuit(hand, gameManager.cardSprites);
         UpdateSuitIcon(selectedSuit);
 
         // 문양 버튼 이벤트 연결
@@ -45,13 +55,13 @@ public class PledgePopupManager : MonoBehaviour
         diamondButton.onClick.AddListener(() => OnSuitSelected("D"));
         clubButton.onClick.AddListener(() => OnSuitSelected("C"));
 
-
-
-        pledgeSlider.minValue = 13;
+        // 슬라이더 설정
+        pledgeSlider.minValue = gameManager.currentHighestPledge + 1;
         pledgeSlider.maxValue = 20;
-        pledgeSlider.value = 13;
-        pledgeValueText.text = "13";
+        pledgeSlider.value = pledgeSlider.minValue;
+        pledgeValueText.text = pledgeSlider.value.ToString();
 
+        pledgeSlider.onValueChanged.RemoveAllListeners();
         pledgeSlider.onValueChanged.AddListener((value) =>
         {
             pledgeValueText.text = value.ToString();
@@ -60,17 +70,47 @@ public class PledgePopupManager : MonoBehaviour
         runButton.onClick.RemoveAllListeners();
         runButton.onClick.AddListener(() =>
         {
-            //string selectedSuit = GetSelectedSuit();
             int pledgeCount = (int)pledgeSlider.value;
-            Debug.Log($"출마! 문양: {selectedSuit}, 공약: {pledgeCount}장");
+            string suit = selectedSuit;
+
+            if (pledgeCount <= gameManager.currentHighestPledge)
+            {
+                Debug.LogWarning("공약이 현재보다 낮습니다!");
+                return;
+            }
+
+            gameManager.AddOrUpdateCandidate(playerNum, suit, pledgeCount);
+            gameManager.currentHighestPledge = pledgeCount;
+
+            if (pledgeCount == 20)
+            {
+                gameManager.FinalizeLeader(playerNum);
+                // 팝업 닫고 코루틴 종료를 유도
+                popupPanel.SetActive(false);
+                isPopupClosed = true;
+                return; // 이후 흐름 중단
+
+            }
+
             popupPanel.SetActive(false);
+            isPopupClosed = true;
         });
 
         giveUpButton.onClick.RemoveAllListeners();
         giveUpButton.onClick.AddListener(() =>
         {
-            Debug.Log("포기!");
+            gameManager.RemoveCandidate(playerNum);
+            Debug.Log($"Player {playerNum} 출마 포기!");
+
+            // 포기 직후 출마자 수 확인
+            if (!gameManager.isFirstRound && gameManager.candidates.Count == 1)
+            {
+                int lastPlayer = gameManager.candidates[0].playerNumber;
+                gameManager.FinalizeLeader(lastPlayer);
+            }
+
             popupPanel.SetActive(false);
+            isPopupClosed = true;
         });
     }
 
@@ -132,4 +172,5 @@ public class PledgePopupManager : MonoBehaviour
             case "C": suitIcon.sprite = clubSprite; break;
         }
     }
+
 }
