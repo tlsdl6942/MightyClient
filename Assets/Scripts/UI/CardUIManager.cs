@@ -57,7 +57,7 @@ public class CardUIManager : MonoBehaviour
         }
     }
 
-    IEnumerator AnimateCardToPlayer(int cardId, int uiIndex, bool isLocalPlayer)
+    IEnumerator AnimateCardToPlayer(int cardId, int uiIndex, bool isLocalPlayer, float duration = 0.04f)
     {
         GameObject flyingCard = Instantiate(flyingCardPrefab, cardStackObject.transform.position, Quaternion.identity, cardStackObject.transform.parent);
         Image cardImage = flyingCard.GetComponent<Image>();
@@ -65,7 +65,7 @@ public class CardUIManager : MonoBehaviour
         cardImage.sprite = cardSprite;
 
         Vector3 targetPos = playerHandAreas[uiIndex].position;
-        float duration = 0.04f;
+        //float duration = 0.04f;
         float elapsed = 0f;
         Vector3 startPos = flyingCard.transform.position;
 
@@ -110,10 +110,38 @@ public class CardUIManager : MonoBehaviour
     {
         foreach (int cardId in cardIds)
         {
-            yield return StartCoroutine(AnimateCardToPlayer(cardId, uiIndex, isLocalPlayer));
+            yield return StartCoroutine(AnimateCardToPlayer(cardId, uiIndex, isLocalPlayer, 0.1f));
         }
 
         // 대표의 패에 카드 추가
         gameManager.playerHands[gameManager.rulingPartyLeader].AddRange(cardIds);
+
+        // 무조건 정렬
+        gameManager.Sort(gameManager.playerHands[gameManager.rulingPartyLeader]);
+
+        RedrawPlayerHand(gameManager.rulingPartyLeader);
+
+    }
+    public void RedrawPlayerHand(int playerNum)
+    {
+        int uiIndex = GetUIIndexFromPlayerNumber(playerNum);
+        bool isLocalPlayer = (playerNum == gameManager.myPlayerNumber);
+
+        Transform handArea = playerHandAreas[uiIndex];
+
+        // 기존 카드 오브젝트 제거
+        foreach (Transform child in handArea)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // 정렬된 손패 기반으로 다시 생성
+        List<int> hand = gameManager.playerHands[playerNum];
+        foreach (int cardId in hand)
+        {
+            GameObject card = Instantiate(cardPrefab, handArea);
+            Image img = card.GetComponent<Image>();
+            img.sprite = isLocalPlayer ? gameManager.cardSprites[cardId] : backSprite;
+        }
     }
 }

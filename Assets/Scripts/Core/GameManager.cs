@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class GameManager : MonoBehaviour
 {
@@ -109,7 +110,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void SortPlayerHands()
+    public void Sort(List<int> hand)
     {
         Dictionary<string, int> suitOrder = new Dictionary<string, int>
     {
@@ -136,32 +137,36 @@ public class GameManager : MonoBehaviour
         { "A", 12 }
     };
 
-        for (int i = 0; i < playerHands.Count; i++)
+        hand.Sort((a, b) =>
         {
-            playerHands[i].Sort((a, b) =>
-            {
-                string nameA = cardSprites[a].name;
-                string nameB = cardSprites[b].name;
+            string nameA = cardSprites[a].name;
+            string nameB = cardSprites[b].name;
 
-                // Joker 예외 처리
-                if (nameA == "Joker") return 1;
-                if (nameB == "Joker") return -1;
+            if (nameA == "Joker") return 1;
+            if (nameB == "Joker") return -1;
 
-                string rankA = nameA.Substring(0, nameA.Length - 1);
-                string suitA = nameA.Substring(nameA.Length - 1);
+            string rankA = nameA.Substring(0, nameA.Length - 1);
+            string suitA = nameA.Substring(nameA.Length - 1);
 
-                string rankB = nameB.Substring(0, nameB.Length - 1);
-                string suitB = nameB.Substring(nameB.Length - 1);
+            string rankB = nameB.Substring(0, nameB.Length - 1);
+            string suitB = nameB.Substring(nameB.Length - 1);
 
-                int suitCompare = suitOrder[suitA].CompareTo(suitOrder[suitB]);
-                if (suitCompare != 0)
-                    return suitCompare;
+            int suitCompare = suitOrder[suitA].CompareTo(suitOrder[suitB]);
+            if (suitCompare != 0) return suitCompare;
 
-                return rankOrder[rankA].CompareTo(rankOrder[rankB]);
-            });
+            return rankOrder[rankA].CompareTo(rankOrder[rankB]);
+        });
+
+    }
+
+    void SortPlayerHands()
+    {
+        for (int i = 1; i <= 5; i++) // 1~5번 플레이어
+        {
+            Sort(playerHands[i]);
         }
     }
-    
+
     void PrintPlayerHands()
     {
         for (int i = 1; i <= 5; i++)
@@ -293,6 +298,8 @@ public class GameManager : MonoBehaviour
         Debug.Log($"여당 대표 확정! Player: {playerNum}, 기루다: {rulingSuit}, 카드 수: {rulingPledge}");
 
         // 이후 게임 진행 로직 연결
+        List<int> extraCards = GetExtraCardsForLeader();
+        cardUI.DistributeExtraCardsToLeader(rulingPartyLeader, extraCards);
         // 예: 정책 제시, 야당 등장, UI 업데이트 등
 
     }
